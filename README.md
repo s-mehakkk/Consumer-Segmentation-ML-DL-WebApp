@@ -39,7 +39,9 @@ A simple web interface was created using Flask. The interface allows users to in
 3. Enter the required input details to get the customer segment prediction.
 
 Source code:
+
 Python - Assignment_Round.ipynb
+
 Server - app.py
 
 
