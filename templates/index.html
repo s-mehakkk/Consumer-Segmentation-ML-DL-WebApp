@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Segment Prediction</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Customer Segment Prediction</h1>
+    <form id="predictionForm">
+        <label for="BALANCE">BALANCE:</label>
+        <input type="text" id="BALANCE" name="BALANCE"><br><br>
+        <label for="BALANCE_FREQUENCY">BALANCE_FREQUENCY:</label>
+        <input type="text" id="BALANCE_FREQUENCY" name="BALANCE_FREQUENCY"><br><br>
+        <label for="PURCHASES">PURCHASES:</label>
+        <input type="text" id="PURCHASES" name="PURCHASES"><br><br>
+        <label for="CASH_ADVANCE">CASH_ADVANCE:</label>
+        <input type="text" id="CASH_ADVANCE" name="CASH_ADVANCE"><br><br>
+        <label for="PURCHASES_FREQUENCY">PURCHASES_FREQUENCY:</label>
+        <input type="text" id="PURCHASES_FREQUENCY" name="PURCHASES_FREQUENCY"><br><br>
+        <label for="CREDIT_LIMIT">CREDIT_LIMIT:</label>
+        <input type="text" id="CREDIT_LIMIT" name="CREDIT_LIMIT"><br><br>
+        <label for="PAYMENTS">PAYMENTS:</label>
+        <input type="text" id="PAYMENTS" name="PAYMENTS"><br><br>
+        <label for="MINIMUM_PAYMENTS">MINIMUM_PAYMENTS:</label>
+        <input type="text" id="MINIMUM_PAYMENTS" name="MINIMUM_PAYMENTS"><br><br>
+        <label for="TENURE">TENURE:</label>
+        <input type="text" id="TENURE" name="TENURE"><br><br>
+        <input type="button" value="Predict" onclick="onClickedEstimatePrice()">
+    </form>
+    <div id="result"></div>
+
+    <h2>Customer Segments</h2>
+    <canvas id="pieChart"></canvas>
+    <canvas id="barChart"></canvas>
+
+    <script>
+        function onClickedEstimatePrice() {
+            console.log("Predict clicked");
+            var BALANCE = document.getElementById("BALANCE");
+            var BALANCE_FREQUENCY = document.getElementById("BALANCE_FREQUENCY");
+            var PURCHASES = document.getElementById("PURCHASES");
+            var CASH_ADVANCE = document.getElementById("CASH_ADVANCE");
+            var CREDIT_LIMIT = document.getElementById("CREDIT_LIMIT");
+            var PURCHASES_FREQUENCY = document.getElementById("PURCHASES_FREQUENCY");
+            var PAYMENTS = document.getElementById("PAYMENTS");
+            var MINIMUM_PAYMENTS = document.getElementById("MINIMUM_PAYMENTS");
+            var TENURE = document.getElementById("TENURE");
+
+            document.getElementById('result').innerHTML = "Calculating Value...";
+
+            var url = "/predict";
+
+            $.post(url, {
+                BALANCE: parseFloat(BALANCE.value),
+                BALANCE_FREQUENCY: parseFloat(BALANCE_FREQUENCY.value),
+                PURCHASES: parseFloat(PURCHASES.value),
+                CASH_ADVANCE: parseFloat(CASH_ADVANCE.value),
+                CREDIT_LIMIT: parseFloat(CREDIT_LIMIT.value),
+                PURCHASES_FREQUENCY: parseFloat(PURCHASES_FREQUENCY.value),
+                PAYMENTS: parseFloat(PAYMENTS.value),
+                MINIMUM_PAYMENTS: parseFloat(MINIMUM_PAYMENTS.value),
+                TENURE: parseFloat(TENURE.value)
+            }, function (data, status) {
+                console.log(data.segment_type);
+                document.getElementById('result').innerHTML = `Segment Type: ${data.segment_type}, Predicted Segment: ${data.predicted_segment}`;
+                console.log(status);
+            });
+        }
+
+        // Data for charts
+        const segmentCounts = {{ segment_counts | tojson | safe }};
+
+        // Pie Chart
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        const pieChart = new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(segmentCounts),
+                datasets: [{
+                    data: Object.values(segmentCounts),
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+
+        // Bar Chart
+        const barCtx = document.getElementById('barChart').getContext('2d');
+        const barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(segmentCounts),
+                datasets: [{
+                    data: Object.values(segmentCounts),
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
